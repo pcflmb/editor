@@ -43,7 +43,7 @@
               var s = checkSecond((timeArray[1] - 1));
               if(s==59){m=m-1}
               if(m<0){
-                  alert("TIME'S UP, HANDS UP!!!")
+                  alert( "Time! \n Round complete! \n Please wait for instructions to view your results.")
                   timer.innerHTML = "COMPLETED"
                   return;
               }
@@ -81,7 +81,7 @@
     Unnamed
   </div>
   <div class="time-left" id="time-left">
-    Time: <p id="timer"></p>
+    Time: <p id="timer">15:00</p>
   </div>
 
   <div class="power-mode-indicator">

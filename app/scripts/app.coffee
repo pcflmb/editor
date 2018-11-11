@@ -237,11 +237,12 @@ class App
 
   onClickFinish: =>
     confirm = prompt "
-      This will show the results of your code. Doing this before the round is over
-      WILL DISQUALIFY YOU. Are you sure you want to proceed? Type \"yes\" to confirm.
+      Woah, hold up! \n
+      This will show the results of your code. \n
+      Please wait for given instructions at the end of the round. \n
     "
 
-    if confirm?.toLowerCase() is "yes"
+    if confirm?.toLowerCase() is "submit"
       @$result[0].contentWindow.postMessage(@editor.getValue(), "*")
       @$result.show()
 
