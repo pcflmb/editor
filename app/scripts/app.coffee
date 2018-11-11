@@ -39,7 +39,7 @@ class App
 
   EXCLAMATION_EVERY: 10
   EXCLAMATIONS: ["Super!", "Radical!", "Fantastic!", "Great!", "OMG",
-  "Whoah!", ":O", "Nice!", "Splendid!", "Wild!", "Grand!", "Impressive!",
+  "Whoah!", "Wow!", "Nice!", "Splendid!", "Wild!", "Grand!", "Impressive!",
   "Stupendous!", "Extreme!", "Awesome!"]
 
   currentStreak: 0
