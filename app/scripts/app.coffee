@@ -75,6 +75,7 @@ class App
 
     $(".instructions-container, .instructions-button").on "click", @onClickInstructions
     @$reference.on "click", @onClickReference
+    $(window).on "keydown", @onEscapeKeyPress
     @$finish.on "click", @onClickFinish
     @$nameTag.on "click", => @getName true
 
@@ -229,6 +230,10 @@ class App
   onClickReference: =>
     @$reference.toggleClass "active"
     @editor.focus() unless @$reference.hasClass("active")
+
+  onEscapeKeyPress: (e) =>
+    ESCAPE_KEY = 27
+    @$reference.toggleClass "active" if e.keyCode is ESCAPE_KEY and @$reference.hasClass("active")
 
   onClickFinish: =>
     confirm = prompt "
