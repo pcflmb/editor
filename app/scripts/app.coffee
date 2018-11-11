@@ -64,7 +64,6 @@ class App
 
     @debouncedSaveContent = _.debounce @saveContent, 300
     @debouncedEndStreak = _.debounce @endStreak, @STREAK_TIMEOUT
-    @throttledShake = _.throttle @shake, 100, trailing: false
     @throttledSpawnParticles = _.throttle @spawnParticles, 25, trailing: false
 
     @editor = @setupAce()
@@ -215,21 +214,6 @@ class App
         @PARTICLE_SIZE
       )
 
-  shake: ->
-    return unless @powerMode
-
-    intensity = 1 + 2 * Math.random() * Math.floor(
-      (@currentStreak - @POWER_MODE_ACTIVATION_THRESHOLD) / 100
-    )
-    x = intensity * (if Math.random() > 0.5 then -1 else 1)
-    y = intensity * (if Math.random() > 0.5 then -1 else 1)
-
-    @$editor.css "margin", "#{y}px #{x}px"
-
-    setTimeout =>
-      @$editor.css "margin", ""
-    , 75
-
   activatePowerMode: =>
     @powerMode = true
     @$body.addClass "power-mode"
@@ -262,8 +246,6 @@ class App
     if insertTextAction
       @increaseStreak()
       @debouncedEndStreak()
-
-    @throttledShake()
 
     range = e.data.range
     pos = if insertTextAction then range.end else range.start
