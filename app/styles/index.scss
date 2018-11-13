@@ -60,6 +60,44 @@ body.show-instructions {
   }
 }
 
+.lobby-screen {
+  color: white;
+  background-color: black;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  z-index: 100;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  text-align: center;
+
+  &__text-container {
+    margin-bottom: 40px;
+  }
+
+  &__start-button {
+    height: 50px;
+    font-size: 24px;
+  }
+
+  &__osedea {
+    font-size: 40px;
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+
+    span {
+      color: red;
+    }
+  }
+}
+
 .background {
   position: absolute;
   top: 0;

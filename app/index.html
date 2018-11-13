@@ -6,50 +6,42 @@
   <script>
       document.onreadystatechange = function() {
           if(document.readyState === "interactive") {
+              // Clear contestants code within local storage from last round.
               localStorage.removeItem('content');
           }
       }
 
       window.onload = function() {
           var timer = document.getElementById('timer');
+          var startButton = document.getElementById('start-button');
+          var timeLeft = document.getElementById('time-left')
           var timerStarted = false;
           timer.innerHTML = '15' + ":" + '00';
-          document.addEventListener('keydown', function(event) {
-              if (!timerStarted) {
-                  startTimer();
-                  timerStarted = true;
-              }
-          }, false);
 
-          document.addEventListener('click', function(event) {
-              if (!timerStarted) {
-                  startTimer();
-                  timerStarted = true;
-              }
-          }, false);
-
-          document.getElementById('time-left').addEventListener('click', function(event) {
-              event.stopPropagation();
-              if (timer.innerHTML === "COMPLETED") {
-                  timer.innerHTML = '15' + ":" + '00';
-                  timerStarted = false;
-              }
-          })
+          startButton.addEventListener('mouseup', startTimer, false)
 
           function startTimer() {
+              timerStarted = true;
+
+              startButton.removeEventListener('mouseup', startTimer, false)
+
               var presentTime = timer.innerHTML;
               var timeArray = presentTime.split(/[:]+/);
-              var m = timeArray[0];
-              var s = checkSecond((timeArray[1] - 1));
-              if(s==59){m=m-1}
-              if(m<0){
-                  alert( "Time! \n Round complete! \n Please wait for instructions to view your results.")
+              var minutes = timeArray[0];
+              var seconds = checkSecond((timeArray[1] - 1));
+
+              if (seconds == 59) {
+                  minutes = minutes - 1
+              }
+
+              if (minutes < 0) {
+                  alert("Time! \n Round complete! \n Please wait for instructions before viewing results.")
                   timer.innerHTML = "COMPLETED"
                   return;
               }
 
-              timer.innerHTML =
-                m + ":" + s;
+              timer.innerHTML = minutes + ":" + seconds;
+
               setTimeout(startTimer, 1000);
             }
 
@@ -63,6 +55,18 @@
   <script src="bundle.js" inline></script>
 </head>
 <body>
+<div class="lobby-screen">
+    <div class="lobby-screen__text-container">
+        <h2>Welcome <span class="lobby-screen-name">competitor</span> 👋</h2>
+        <h1>Waiting for other competitors to join.</h1>
+        <h4>(Wait for countdown! Then press start to begin. Bonne chance!)</h4>
+    </div>
+
+    <button class="lobby-screen__start-button" id="start-button">Start</button>
+
+    <div class="lobby-screen__osedea"><span>/</span>OSEDEA</div>
+</div>
+
   <div class="background"></div>
   <canvas class="canvas-overlay"></canvas>
   <pre id="editor"></pre>

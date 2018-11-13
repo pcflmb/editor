@@ -42,6 +42,7 @@ class App
   "Whoah!", "Wow!", "Nice!", "Splendid!", "Wild!", "Grand!", "Impressive!",
   "Stupendous!", "Extreme!", "Awesome!"]
 
+  name: null
   currentStreak: 0
   powerMode: false
   particles: []
@@ -54,6 +55,9 @@ class App
     @$exclamations = $ ".streak-container .exclamations"
     @$reference = $ ".reference-screenshot-container"
     @$nameTag = $ ".name-tag"
+    @$lobbyScreen = $ ".lobby-screen"
+    @$lobbyScreenName = $ ".lobby-screen-name"
+    @$startButton = $ "#start-button"
     @$result = $ ".result"
     @$editor = $ "#editor"
     @canvas = @setupCanvas()
@@ -72,7 +76,7 @@ class App
 
     @editor.getSession().on "change", @onChange
     $(window).on "beforeunload", -> "Hold your horses!"
-
+    @$startButton.on "click", @onClickHideLobby
     $(".instructions-container, .instructions-button").on "click", @onClickInstructions
     @$reference.on "click", @onClickReference
     $(window).on "keydown", @onEscapeKeyPress
@@ -80,6 +84,7 @@ class App
     @$nameTag.on "click", => @getName true
 
     @getName()
+    @setLobbyScreenName()
 
     window.requestAnimationFrame? @onFrame
 
@@ -104,9 +109,15 @@ class App
     canvas
 
   getName: (forceUpdate) ->
-    name = (not forceUpdate and localStorage["name"]) || prompt "What's your name?"
-    localStorage["name"] = name
-    @$nameTag.text(name) if name
+    @name = (not forceUpdate and localStorage["name"]) || prompt "Enter name or hacker alias."
+    localStorage["name"] = @name
+    @$nameTag.text(@name) if @name
+
+  setLobbyScreenName: ->
+    @$lobbyScreenName.html(@name)
+
+  onClickHideLobby: ->
+    $(".lobby-screen").hide();
 
   loadContent: ->
     return unless (content = localStorage["content"])
