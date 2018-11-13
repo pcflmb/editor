@@ -39,9 +39,10 @@ class App
 
   EXCLAMATION_EVERY: 10
   EXCLAMATIONS: ["Super!", "Radical!", "Fantastic!", "Great!", "OMG",
-  "Whoah!", ":O", "Nice!", "Splendid!", "Wild!", "Grand!", "Impressive!",
+  "Whoah!", "Wow!", "Nice!", "Splendid!", "Wild!", "Grand!", "Impressive!",
   "Stupendous!", "Extreme!", "Awesome!"]
 
+  name: null
   currentStreak: 0
   powerMode: false
   particles: []
@@ -54,6 +55,9 @@ class App
     @$exclamations = $ ".streak-container .exclamations"
     @$reference = $ ".reference-screenshot-container"
     @$nameTag = $ ".name-tag"
+    @$lobbyScreen = $ ".lobby-screen"
+    @$lobbyScreenName = $ ".lobby-screen-name"
+    @$startButton = $ "#start-button"
     @$result = $ ".result"
     @$editor = $ "#editor"
     @canvas = @setupCanvas()
@@ -64,7 +68,6 @@ class App
 
     @debouncedSaveContent = _.debounce @saveContent, 300
     @debouncedEndStreak = _.debounce @endStreak, @STREAK_TIMEOUT
-    @throttledShake = _.throttle @shake, 100, trailing: false
     @throttledSpawnParticles = _.throttle @spawnParticles, 25, trailing: false
 
     @editor = @setupAce()
@@ -73,13 +76,15 @@ class App
 
     @editor.getSession().on "change", @onChange
     $(window).on "beforeunload", -> "Hold your horses!"
-
+    @$startButton.on "click", @onClickHideLobby
     $(".instructions-container, .instructions-button").on "click", @onClickInstructions
     @$reference.on "click", @onClickReference
+    $(window).on "keydown", @onEscapeKeyPress
     @$finish.on "click", @onClickFinish
     @$nameTag.on "click", => @getName true
 
     @getName()
+    @setLobbyScreenName()
 
     window.requestAnimationFrame? @onFrame
 
@@ -104,9 +109,15 @@ class App
     canvas
 
   getName: (forceUpdate) ->
-    name = (not forceUpdate and localStorage["name"]) || prompt "What's your name?"
-    localStorage["name"] = name
-    @$nameTag.text(name) if name
+    @name = (not forceUpdate and localStorage["name"]) || prompt "Enter name or hacker alias."
+    localStorage["name"] = @name
+    @$nameTag.text(@name) if @name
+
+  setLobbyScreenName: ->
+    @$lobbyScreenName.html(@name)
+
+  onClickHideLobby: ->
+    $(".lobby-screen").hide();
 
   loadContent: ->
     return unless (content = localStorage["content"])
@@ -215,21 +226,6 @@ class App
         @PARTICLE_SIZE
       )
 
-  shake: ->
-    return unless @powerMode
-
-    intensity = 1 + 2 * Math.random() * Math.floor(
-      (@currentStreak - @POWER_MODE_ACTIVATION_THRESHOLD) / 100
-    )
-    x = intensity * (if Math.random() > 0.5 then -1 else 1)
-    y = intensity * (if Math.random() > 0.5 then -1 else 1)
-
-    @$editor.css "margin", "#{y}px #{x}px"
-
-    setTimeout =>
-      @$editor.css "margin", ""
-    , 75
-
   activatePowerMode: =>
     @powerMode = true
     @$body.addClass "power-mode"
@@ -246,13 +242,22 @@ class App
     @$reference.toggleClass "active"
     @editor.focus() unless @$reference.hasClass("active")
 
+  onEscapeKeyPress: (e) =>
+    ESCAPE_KEY = 27
+    # Close reference image window
+    @$reference.toggleClass "active" if e.keyCode is ESCAPE_KEY and @$reference.hasClass("active")
+
+    # Close instructions window
+    $("body").removeClass("show-instructions") if e.keyCode is ESCAPE_KEY and $("body").hasClass "show-instructions" 
+
   onClickFinish: =>
     confirm = prompt "
-      This will show the results of your code. Doing this before the round is over
-      WILL DISQUALIFY YOU. Are you sure you want to proceed? Type \"yes\" to confirm.
+      Woah, hold up! \n
+      This will show the results of your code. \n
+      Please wait for given instructions at the end of the round. \n
     "
 
-    if confirm?.toLowerCase() is "yes"
+    if confirm?.toLowerCase() is "submit"
       @$result[0].contentWindow.postMessage(@editor.getValue(), "*")
       @$result.show()
 
@@ -262,8 +267,6 @@ class App
     if insertTextAction
       @increaseStreak()
       @debouncedEndStreak()
-
-    @throttledShake()
 
     range = e.data.range
     pos = if insertTextAction then range.end else range.start
