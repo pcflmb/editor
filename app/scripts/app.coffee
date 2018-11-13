@@ -244,7 +244,11 @@ class App
 
   onEscapeKeyPress: (e) =>
     ESCAPE_KEY = 27
+    # Close reference image window
     @$reference.toggleClass "active" if e.keyCode is ESCAPE_KEY and @$reference.hasClass("active")
+
+    # Close instructions window
+    $("body").removeClass("show-instructions") if e.keyCode is ESCAPE_KEY and $("body").hasClass "show-instructions" 
 
   onClickFinish: =>
     confirm = prompt "
