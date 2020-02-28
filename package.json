@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "description": "",
   "author": "",
+  "scripts": {
+    "start": "./node_modules/.bin/gulp serve"
+  },
   "devDependencies": {
     "autoprefixer": "^9.7.4",
     "autoprefixer-core": "^5.1.7",
@@ -12,7 +15,7 @@
     "decaffeinate": "^6.0.9",
     "deep-extend": "^0.3.2",
     "file-loader": "^0.8.1",
-    "gulp": "^3.8.11",
+    "gulp": "^4.0.2",
     "gulp-inline-source": "^1.2.0",
     "gulp-load-plugins": "^0.8.0",
     "gulp-rename": "^1.2.2",

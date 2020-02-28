@@ -16,6 +16,8 @@ const autoprefixer = require("autoprefixer-core");
 const webpack = require("webpack");
 const WebpackDevServer = require("webpack-dev-server");
 
+const { watch, series } = gulp;
+
 //###################
 //# CONFIG
 //###################
@@ -101,43 +103,63 @@ const webpackers = _(config.webpackEnvs).mapObject(val => webpack(deepExtend({},
 //# TASKS
 //###################
 
-gulp
-  .task("copy-assets", function() {
-    const assets = gulp
-      .src(path.join(config.paths.assets, "**"))
-      .pipe(gulp.dest(`${config.paths.tmp}/assets`));
+const copyAssets = () => {
+  const assets = gulp
+  .src(path.join(config.paths.assets, "**"))
+  .pipe(gulp.dest(`${config.paths.tmp}/assets`));
 
+  const instructions = gulp
+    .src(path.join(config.paths.app, "index.html"))
+    .pipe(gulp.dest(config.paths.tmp));
 
-    const instructions = gulp
-      .src(path.join(config.paths.app, "index.html"))
-      .pipe(gulp.dest(config.paths.tmp));
+  return merge(assets, instructions);  
+};
 
-    return merge(assets, instructions);
-}).task("copy-page-files", () => gulp
+const copyPageFiles = () => gulp
   .src(path.join(config.paths.assets, "{instructions.html,page.png,result.html,beach.jpg}"))
-  .pipe(gulp.dest(path.join(config.paths.dist, "assets")))).task("webpack-dev-server", function(done) {
-    const server = new WebpackDevServer(webpackers.development, {
-      contentBase: config.paths.tmp,
-      hot: true,
-      noInfo: true
-    }
+  .pipe(gulp.dest(path.join(config.paths.dist, "assets")));
+
+const webpackDevServer = (done) => {
+  const server = new WebpackDevServer(webpackers.development, {
+    contentBase: config.paths.tmp,
+    hot: true,
+    noInfo: true
+  }
+  );
+
+  return server.listen(config.serverPort, "0.0.0.0", function(err) {
+    if (err) { throw new $.util.PluginError("webpack-dev-server", err); }
+    $.util.log($.util.colors.green(
+      `[webpack-dev-server] Server running on http://localhost:${config.serverPort}`)
     );
 
-    return server.listen(config.serverPort, "0.0.0.0", function(err) {
-      if (err) { throw new $.util.PluginError("webpack-dev-server", err); }
-      $.util.log($.util.colors.green(
-        `[webpack-dev-server] Server running on http://localhost:${config.serverPort}`)
-      );
+    return done();
+  });
+};
 
-      return done();
-    });
-    }).task("build", done => webpackers.distribute.run(function(err, stats) {
-  if (err) { throw new $.util.PluginError("webpack:build", err); }
+const build = (done) => webpackers.distribute.run((err, stats) => {
+  if (err) { 
+    throw new $.util.PluginError("webpack:build", err); 
+  }
+
   return done();
-})).task("serve", ["copy-assets", "webpack-dev-server"], () => gulp.watch(["app/assets/**"], ["copy-assets"]))
+})
 
-  .task("inline", () => gulp
+const serve = () => watch(["app/assets/**"], copyAssets);
+
+const inline = () => gulp
   .src(`${config.paths.tmp}/index.html`)
   .pipe($.inlineSource())
   .pipe(rename({basename: "editor"}))
-  .pipe(gulp.dest(`${config.paths.dist}`))).task("dist", () => runSequence("copy-assets", "build", "inline", "copy-page-files")).task("default", ["serve"]);
+  .pipe(gulp.dest(`${config.paths.dist}`));
+
+const dist = () => () => runSequence("copy-assets", "build", "inline", "copy-page-files");
+
+exports.copyAssets = copyAssets;
+exports.copyPageFiles = copyPageFiles;
+exports.webpackDevServer = webpackDevServer;
+exports.build = build;
+exports.serve = series(copyAssets, webpackDevServer, serve);
+exports.inline = inline;
+exports.dist = series(copyAssets, build, inline, copyPageFiles);
+exports.default = serve;
